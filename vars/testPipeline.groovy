@@ -11,8 +11,8 @@ def call(Map configMap)
     {
         APP_VERSION = ""
         ACC_ID  = "896328676768"
-        ACC_REGION = "us-east-1",
-        PROJECT = "${configMap.project}",
+        ACC_REGION = "us-east-1"
+        PROJECT = "${configMap.project}"
         COMPONENT = "${configMap.COMPONENT}"
     }
 
