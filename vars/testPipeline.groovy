@@ -142,7 +142,7 @@ def call(Map configMap)
         -v /var/run/docker.sock:/var/run/docker.sock \
         aquasec/trivy:latest image \
         --severity HIGH,CRITICAL \
-        ${ACC_ID}.dkr.ecr.${ACC_REGION}.amazonaws.com/rye/poc:${APP_VERSION}
+        ${ACC_ID}.dkr.ecr.${ACC_REGION}.amazonaws.com/${env.PROJECT}/${env.COMPONENT}:${env.APP_VERSION}
 
         echo "----------------------------------------------trivy report ended---------------------------"
 
