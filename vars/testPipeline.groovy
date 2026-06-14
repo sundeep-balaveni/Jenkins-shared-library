@@ -152,19 +152,26 @@ def call(Map configMap)
         }
     }
 
-    stage('Conformation to push the Docker image')
-    {
+stage('Approval') {
+    steps {
+        script {
+            def choice = input(
+                message: 'Push image to ECR?',
+                parameters: [
+                    choice(
+                        name: 'ACTION',
+                        choices: ['YES', 'NO'],
+                        description: 'Select action'
+                    )
+                ]
+            )
 
-         when {
-                expression { params.DEPLOY }
+            if (choice == 'NO') {
+                error("User chose not to push image")
             }
-
-        steps
-        {
-           input message : "D you want to push the image to ECR "         
         }
-
     }
+}
 
 
 
