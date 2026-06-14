@@ -154,20 +154,16 @@ def call(Map configMap)
 
     stage('Conformation to push the Docker image')
     {
+
+         when {
+                expression { params.DEPLOY }
+            }
+
         steps
         {
-
-             when {
-                expression { "${params.DEPLOY}" == "true" }
-            }
-
-            input {
-                message "Do you want to Push the image to ECR"
-                
-            }
-
-           
+           input message : "D you want to push the image to ECR "         
         }
+
     }
 
 
