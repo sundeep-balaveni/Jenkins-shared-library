@@ -42,6 +42,26 @@ def call(Map configMap)
             }
     }
 
+        stage('Install Dependencies') {
+    steps {
+        sh '''
+        cd APP/FRONTEND/V2/lms-platform/${env.COMPONENT}
+        npm ci
+        '''
+    }
+}
+
+stage('Unit Tests') {
+    steps {
+        sh '''
+        cd APP/FRONTEND/V2/lms-platform/${env.COMPONENT}
+        npm test -- --coverage
+        '''
+    }
+}
+
+
+
    stage('sonarQube Analysis') 
    {
     steps {
@@ -60,6 +80,8 @@ def call(Map configMap)
    }
 
 
+
+
     stage('Quality Gate')
     {
         steps{
@@ -74,6 +96,10 @@ def call(Map configMap)
             }
         }
     }
+
+
+
+    
 
     stage('Dependabot Scan') 
     {
