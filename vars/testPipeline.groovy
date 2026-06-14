@@ -152,6 +152,25 @@ def call(Map configMap)
         }
     }
 
+    stage('Conformation to push the Docker image')
+    {
+        steps
+        {
+            input {
+                message "Do you want to Push the image to ECR"
+                
+            }
+
+            when {
+                expression { "${params.DEPLOY}" == "true" }
+            }
+
+        }
+    }
+
+
+
+
     stage('Push to ECR') 
     {
 
