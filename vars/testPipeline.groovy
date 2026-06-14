@@ -156,15 +156,17 @@ def call(Map configMap)
     {
         steps
         {
+
+             when {
+                expression { "${params.DEPLOY}" == "true" }
+            }
+
             input {
                 message "Do you want to Push the image to ECR"
                 
             }
 
-            when {
-                expression { "${params.DEPLOY}" == "true" }
-            }
-
+           
         }
     }
 
