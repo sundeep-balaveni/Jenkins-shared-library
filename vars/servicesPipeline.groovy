@@ -47,7 +47,7 @@ def call(Map configMap)
     steps {
         sh '''
         cd APP/FRONTEND/V2/lms-platform/services/auth-service
-        
+        npm install
 
         echo "===== FILES ====="
         ls -lah
