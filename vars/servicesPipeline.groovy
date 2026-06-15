@@ -46,14 +46,16 @@ def call(Map configMap)
     stage('Install Dependencies') {
     steps {
         sh '''
-        cd APP/FRONTEND/V2/lms-platform/services/auth-service
         npm install
 
-        echo "===== FILES ====="
-        ls -lah
+echo "===== JEST ====="
+npm list jest
 
-        echo "===== PACKAGE LOCK ====="
-        cat package-lock.json || echo "package-lock.json not found"
+echo "===== BIN ====="
+ls -la node_modules/.bin | grep jest
+
+echo "===== NODE_ENV ====="
+echo $NODE_ENV
 
 
 
@@ -68,9 +70,7 @@ stage('Unit Tests') {
         sh '''
         cd APP/FRONTEND/V2/lms-platform/services/auth-service
 
-        ls -la tests
-
-        npm test -- --coverage
+        ./node_modules/.bin/jest --coverage
         '''
     }
 }
