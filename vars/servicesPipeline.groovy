@@ -66,7 +66,10 @@ def call(Map configMap)
 stage('Unit Tests') {
     steps {
         sh '''
-        cd APP/FRONTEND/V2/lms-platform/services/auth-service 
+        cd APP/FRONTEND/V2/lms-platform/services/auth-service
+
+        ls -la tests
+
         npm test -- --coverage
         '''
     }
