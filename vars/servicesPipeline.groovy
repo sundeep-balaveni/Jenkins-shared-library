@@ -46,6 +46,8 @@ def call(Map configMap)
     stage('Install Dependencies') {
     steps {
         sh '''
+
+        cd APP/FRONTEND/V2/lms-platform/services/auth-service
         npm install
 
 echo "===== JEST ====="
