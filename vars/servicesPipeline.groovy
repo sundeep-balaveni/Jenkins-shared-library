@@ -48,6 +48,17 @@ def call(Map configMap)
         sh '''
         cd APP/FRONTEND/V2/lms-platform/services/auth-service
         npm ci
+
+        echo "===== FILES ====="
+        ls -lah
+
+        echo "===== PACKAGE LOCK ====="
+        cat package-lock.json || echo "package-lock.json not found"
+
+
+
+
+
         '''
     }
 }
