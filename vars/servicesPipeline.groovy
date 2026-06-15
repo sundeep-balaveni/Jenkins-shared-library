@@ -13,7 +13,8 @@ def call(Map configMap)
         ACC_ID  = "896328676768"
         ACC_REGION = "us-east-1"
         PROJECT = "${configMap.project}"
-        COMPONENT = "${configMap.COMPONENT}"
+            COMPONENT = "${configMap.COMPONENT}"
+            SERVICE_PATH = "${configMap.SERVICE_PATH}"
     }
 
     options
@@ -31,16 +32,16 @@ def call(Map configMap)
 
     stages {
 
-    stage('Read Version') 
-    {
-            steps {
-                script {
-                    def packageJson = readJSON file: "APP/FRONTEND/V2/lms-platform/${env.COMPONENT}/package.json"
-                    env.APP_VERSION = packageJson['version']
-                    echo "Version is ${env.APP_VERSION}"
-                }
-            }
-    }
+    // stage('Read Version') 
+    // {
+    //         steps {
+    //             script {
+    //                 def packageJson = readJSON file: "APP/FRONTEND/V2/lms-platform/${env.COMPONENT}/package.json"
+    //                 env.APP_VERSION = packageJson['version']
+    //                 echo "Version is ${env.APP_VERSION}"
+    //             }
+    //         }
+    // }
 
         stage('Install Dependencies') {
     steps {
@@ -54,7 +55,7 @@ def call(Map configMap)
 stage('Unit Tests') {
     steps {
         sh '''
-        cd APP/FRONTEND/V2/lms-platform/${env.COMPONENT}
+        cd APP/FRONTEND/V2/lms-platform/${env.SERVICE_PATH}   
         npm test -- --coverage
         '''
     }
@@ -70,7 +71,7 @@ stage('Unit Tests') {
 
             withSonarQubeEnv('sonar-server') {   //location for sonar-properties file  //server
                 sh """
-                cd APP/FRONTEND/V2/lms-platform/${env.COMPONENT}     
+               cd APP/FRONTEND/V2/lms-platform/${env.SERVICE_PATH}     
                 ${scannerHome}/bin/sonar-scanner
                 
                 """
@@ -137,7 +138,7 @@ stage('Unit Tests') {
                     withAWS(credentials: 'ecr-creds', region: 'us-east-1') {
 
                     sh """
-                    cd  APP/FRONTEND/V2/lms-platform/${env.COMPONENT}
+                    cd APP/FRONTEND/V2/lms-platform/${env.SERVICE_PATH}   
 
                    
                    
