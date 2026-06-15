@@ -72,6 +72,8 @@ stage('Unit Tests') {
         sh '''
         cd APP/FRONTEND/V2/lms-platform/services/auth-service
 
+        export NODE_ENV=test
+
         ./node_modules/.bin/jest --coverage
         '''
     }
@@ -102,7 +104,7 @@ stage('Unit Tests') {
     stage('Quality Gate')
     {
         steps{
-            timeout(time: 5, unit: 'MINUTES') {
+            timeout(time: 10, unit: 'MINUTES') {
                 waitForQualityGate abortPipeline: true
 
                 sh """
