@@ -42,6 +42,19 @@ def call(Map configMap)
     //             }
     //         }
     // }
+    
+  stage('Debug') {
+    steps {
+        script {
+            echo "SERVICE_PATH = ${env.SERVICE_PATH}"
+
+            sh """
+            pwd
+            find . -name package.json
+            """
+        }
+    }
+}
 
    stage('sonarQube Analysis') 
    {
