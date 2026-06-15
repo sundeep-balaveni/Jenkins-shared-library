@@ -43,10 +43,10 @@ def call(Map configMap)
     //         }
     // }
 
-        stage('Install Dependencies') {
+    stage('Install Dependencies') {
     steps {
         sh '''
-        cd APP/FRONTEND/V2/lms-platform/${env.COMPONENT}
+        cd APP/FRONTEND/V2/lms-platform/services/auth-service
         npm ci
         '''
     }
@@ -55,7 +55,7 @@ def call(Map configMap)
 stage('Unit Tests') {
     steps {
         sh '''
-        cd APP/FRONTEND/V2/lms-platform/${env.SERVICE_PATH}   
+        cd APP/FRONTEND/V2/lms-platform/services/auth-service 
         npm test -- --coverage
         '''
     }
