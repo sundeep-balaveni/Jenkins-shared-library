@@ -1,6 +1,6 @@
 def call(Map configMap) {
     pipeline {
-        agent { node { label 'roboshop' } }
+        agent { node { label 'RYE-TEST' } }
         parameters {
             choice(name: 'deploy_to', choices: ['dev', 'uat', 'prod'], description: 'Target environment')
             string(name: 'VERSION',   defaultValue: '', description: 'Short commit SHA — set by Jira webhook for UAT/PROD')
@@ -16,7 +16,7 @@ def call(Map configMap) {
                     [key: 'CR_NUMBER', value: '$.CR_NUMBER']
                 ],
                 token: "${configMap.get('project')}-main-pipeline",
-                causeString: 'Triggered by Jira — $deploy_to deploy',
+                causeString: 'Triggered by Jirgita — $deploy_to deploy',
                 printContributedVariables: true,
                 printPostContent: true
             )
