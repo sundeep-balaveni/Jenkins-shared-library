@@ -104,7 +104,7 @@ stage('Unit Tests') {
 
             withSonarQubeEnv('sonar-server') {   //location for sonar-properties file  //server
                 sh """
-               cd APP/FRONTEND/V2/lms-platform/${env.SERVICE_PATH}     
+               cd APP/FRONTEND/V2/lms-platform/${env.COMPONENT}     
                 ${scannerHome}/bin/sonar-scanner
                 
                 """
@@ -171,11 +171,11 @@ stage('Unit Tests') {
                     withAWS(credentials: 'ecr-creds', region: 'us-east-1') {
 
                     sh """
-                    cd APP/FRONTEND/V2/lms-platform/${env.SERVICE_PATH}   
+                    cd APP/FRONTEND/V2/lms-platform/${env.COMPONENT}   
 
                    
                    
-                    docker build -t ${ACC_ID}.dkr.ecr.${ACC_REGION}.amazonaws.com/${env.PROJECT}/${env.COMPONENT}:${env.APP_VERSION} . 
+                    docker build -t ${ACC_ID}.dkr.ecr.${ACC_REGION}.amazonaws.com/${env.PROJECT}/${env.COMPONENT}:${env.VERSION} . 
                     
 
                     """
