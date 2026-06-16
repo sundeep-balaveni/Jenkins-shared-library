@@ -32,16 +32,16 @@ def call(Map configMap)
 
     stages {
 
-    // stage('Read Version') 
-    // {
-    //         steps {
-    //             script {
-    //                 def packageJson = readJSON file: "APP/FRONTEND/V2/lms-platform/${env.COMPONENT}/package.json"
-    //                 env.APP_VERSION = packageJson['version']
-    //                 echo "Version is ${env.APP_VERSION}"
-    //             }
-    //         }
-    // }
+    stage('Read Version') 
+    {
+            steps {
+                script {
+                    def packageJson = readJSON file: "APP/FRONTEND/V2/lms-platform/${env.COMPONENT}/package.json"
+                    env.APP_VERSION = packageJson['version']
+                    echo "Version is ${env.APP_VERSION}"
+                }
+            }
+    }
 
     stage('Install Dependencies') {
     steps {
