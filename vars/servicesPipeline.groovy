@@ -46,7 +46,7 @@ def call(Map configMap)
     stage('Read Version') {
     steps {
         script {
-            def packageJson = readJSON file: "APP/FRONTEND/V2/lms-platform/services/${env.COMPONENT}/package.json"
+            def packageJson = readJSON file: "APP/FRONTEND/V2/lms-platform/${env.COMPONENT}/package.json"
 
             echo "PACKAGE_JSON=${packageJson}"
             echo "VERSION=${packageJson.version}"
