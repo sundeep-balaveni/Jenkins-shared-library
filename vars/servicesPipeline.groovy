@@ -13,8 +13,8 @@ def call(Map configMap)
         ACC_ID  = "896328676768"
         ACC_REGION = "us-east-1"
         PROJECT = "${configMap.project}"
-            COMPONENT = "${configMap.COMPONENT}"
-            SERVICE_PATH = "${configMap.SERVICE_PATH}"
+        component = "${configMap.component}"
+        SERVICE_PATH = "${configMap.servicepath}"
     }
 
     options
@@ -36,7 +36,7 @@ def call(Map configMap)
     // {
     //         steps {
     //             script {
-    //                 def packageJson = readJSON file: "APP/FRONTEND/V2/lms-platform/${env.COMPONENT}/package.json"
+    //                 def packageJson = readJSON file: "APP/FRONTEND/V2/lms-platform/${env.component}/package.json"
     //                 env.APP_VERSION = packageJson['version']
     //                 echo "Version is ${env.APP_VERSION}"
     //             }
@@ -46,7 +46,7 @@ def call(Map configMap)
     stage('Read Version') {
     steps {
         script {
-            def packageJson = readJSON file: "APP/FRONTEND/V2/lms-platform/${env.COMPONENT}/package.json"
+            def packageJson = readJSON file: "APP/FRONTEND/V2/lms-platform/${env.component}/package.json"
 
             echo "PACKAGE_JSON=${packageJson}"
             echo "VERSION=${packageJson.version}"
@@ -104,7 +104,7 @@ stage('Unit Tests') {
 
             withSonarQubeEnv('sonar-server') {   //location for sonar-properties file  //server
                 sh """
-               cd APP/FRONTEND/V2/lms-platform/${env.COMPONENT}     
+               cd APP/FRONTEND/V2/lms-platform/${env.component}     
                 ${scannerHome}/bin/sonar-scanner
                 
                 """
@@ -171,11 +171,11 @@ stage('Unit Tests') {
                     withAWS(credentials: 'ecr-creds', region: 'us-east-1') {
 
                     sh """
-                    cd APP/FRONTEND/V2/lms-platform/${env.COMPONENT}   
+                    cd APP/FRONTEND/V2/lms-platform/${env.component}   
 
                    
                    
-                    docker build -t ${ACC_ID}.dkr.ecr.${ACC_REGION}.amazonaws.com/${env.PROJECT}/${env.COMPONENT}:${env.VERSION} . 
+                    docker build -t ${ACC_ID}.dkr.ecr.${ACC_REGION}.amazonaws.com/${env.PROJECT}/${env.component}:${env.VERSION} . 
                     
 
                     """
@@ -204,7 +204,7 @@ stage('Unit Tests') {
         -v /var/run/docker.sock:/var/run/docker.sock \
         aquasec/trivy:latest image \
         --severity HIGH,CRITICAL \
-        ${ACC_ID}.dkr.ecr.${ACC_REGION}.amazonaws.com/${env.PROJECT}/${env.COMPONENT}:${env.APP_VERSION}
+        ${ACC_ID}.dkr.ecr.${ACC_REGION}.amazonaws.com/${env.PROJECT}/${env.component}:${env.APP_VERSION}
 
         echo "----------------------------------------------trivy report ended---------------------------"
 
@@ -248,7 +248,7 @@ stage('Approval') {
                     sh """
                   
                     aws ecr get-login-password --region ${ACC_REGION} | docker login --username AWS --password-stdin ${ACC_ID}.dkr.ecr.${ACC_REGION}.amazonaws.com
-                    docker push ${ACC_ID}.dkr.ecr.${ACC_REGION}.amazonaws.com/${env.PROJECT}/${env.COMPONENT}:${env.APP_VERSION}
+                    docker push ${ACC_ID}.dkr.ecr.${ACC_REGION}.amazonaws.com/${env.PROJECT}/${env.component}:${env.APP_VERSION}
                     
 
                     """

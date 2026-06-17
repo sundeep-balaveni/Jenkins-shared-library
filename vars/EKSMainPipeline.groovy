@@ -30,6 +30,8 @@ def call(Map configMap) {
             jira_project = configMap.get("jiraProject")
             region       = "us-east-1"
             CLUSTER      = "roboshop-dev"
+            component    = configMap.get("component")
+            SERVICE_PATH = configMap.get("servicePath")
         }
 
         stages {
@@ -46,16 +48,21 @@ def call(Map configMap) {
             }
 
             // ── DEV ────────────────────────────────────────────────────────────
-            stage('Read Version') {
-                when { expression { env.DEPLOY_TO == 'dev' } }
-                steps {
-                    script {
-                        appVersion  = utils.readAppVersion()
-                        shortCommit = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
-                        echo "appVersion: ${appVersion}   shortCommit: ${shortCommit}"
-                    }
-                }
+stage('Read Version') {
+    when { expression { env.DEPLOY_TO == 'dev' } }
+    steps {
+        script {
+            dir(env.SERVICE_PATH) {
+                appVersion = utils.readAppVersion()
             }
+
+            shortCommit = sh(
+                script: 'git rev-parse --short HEAD',
+                returnStdout: true
+            ).trim()
+        }
+    }
+}
 
             stage('Promote Image') {
                 when { expression { env.DEPLOY_TO == 'dev' } }
