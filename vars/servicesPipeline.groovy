@@ -14,7 +14,7 @@ def call(Map configMap)
         ACC_REGION = "us-east-1"
         PROJECT = "${configMap.project}"
         component = "${configMap.component}"
-        SERVICE_PATH = "${configMap.servicepath}"
+        SERVICE_PATH = "${configMap.servicePath}"
     }
 
     options
