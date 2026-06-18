@@ -63,7 +63,7 @@ stage('Read Version') {
     steps {
         sh '''
 
-        cd "${env.SERVICE_PATH}/${env.component}"
+        cd ${env.SERVICE_PATH}/${env.component}
         echo pwd
         npm install
 
