@@ -30,7 +30,6 @@ def call(Map configMap) {
             jira_project = configMap.get("jiraProject")
             region       = "us-east-1"
             CLUSTER      = "roboshop-dev"
-            component    = configMap.get("component")
             SERVICE_PATH = configMap.get("servicePath")
         }
 
