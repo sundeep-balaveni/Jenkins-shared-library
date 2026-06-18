@@ -63,9 +63,12 @@ stage('Read Version') {
     steps {
         sh '''
 
-        cd ${env.SERVICE_PATH}/${env.component}
-        echo pwd
-        npm install
+       dir("${env.SERVICE_PATH}/${env.component}") {
+    sh '''
+    pwd
+    npm install
+    '''
+}
 
 echo "===== JEST ====="
 npm list jest
