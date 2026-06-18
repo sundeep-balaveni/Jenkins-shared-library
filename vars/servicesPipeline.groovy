@@ -43,13 +43,14 @@ def call(Map configMap)
     //         }
     // }
 
-    stage('Read Version') {
+stage('Read Version') {
     steps {
         script {
-            def packageJson = readJSON file: "${env.SERVICE_PATH}/${env.component}"
 
-            echo "PACKAGE_JSON=${packageJson}"
-            echo "VERSION=${packageJson.version}"
+            echo "SERVICE_PATH=${env.SERVICE_PATH}"
+            echo "component=${env.component}"
+
+            def packageJson = readJSON file: "${env.SERVICE_PATH}/${env.component}/package.json"
 
             env.APP_VERSION = packageJson.version
 
