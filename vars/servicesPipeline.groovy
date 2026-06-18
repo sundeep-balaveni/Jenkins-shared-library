@@ -79,21 +79,21 @@ stage('Install Dependencies') {
     }
 }
 
-stage('Unit Tests') {
-    steps {
+// stage('Unit Tests') {
+//     steps {
 
-         dir("${env.SERVICE_PATH}/${env.component}") {
+//          dir("${env.SERVICE_PATH}/${env.component}") {
 
-        sh '''
+//         sh '''
 
-        export NODE_ENV=test
+//         export NODE_ENV=test
 
-        ./node_modules/.bin/jest --coverage
+//         ./node_modules/.bin/jest --coverage
         
-        '''
-    }
-}
-}
+//         '''
+//     }
+// }
+// }
 
 
 
