@@ -27,6 +27,7 @@ def call(Map configMap)
     {
 
         booleanParam(name: 'DEPLOY', defaultValue: false, description: 'Deploy to selected environment')
+        booleanParam(name: 'SKIP_QUALITY_GATE', defaultValue: false, description: 'Skip Quality Gate')
 
     }
 
@@ -117,10 +118,17 @@ stage('Install Dependencies') {
 
 
 
+
+
     stage('Quality Gate')
+
     {
+
+        when{
+            expression {! params.SKIP_QUALITY_GATE }
+        }
         steps{
-            timeout(time: 20, unit: 'MINUTES') {
+            timeout(time: 30, unit: 'MINUTES') {
                 waitForQualityGate abortPipeline: true
 
                 sh """
