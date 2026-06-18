@@ -57,7 +57,7 @@ stage('Read Version') {
 
             echo "APP_VERSION=${env.APP_VERSION}"
         }
-    }
+    }     
 }
 
 stage('Install Dependencies') {
@@ -255,11 +255,13 @@ stage('Approval') {
                 withAWS(credentials: 'ecr-creds', region: 'us-east-1') {
 
                     sh """
+
+                    echo ${ACC_ID}.dkr.ecr.${ACC_REGION}.amazonaws.com/${env.PROJECT}/${env.component}:${env.APP_VERSION}
                   
                     aws ecr get-login-password --region ${ACC_REGION} | docker login --username AWS --password-stdin ${ACC_ID}.dkr.ecr.${ACC_REGION}.amazonaws.com
                     docker push ${ACC_ID}.dkr.ecr.${ACC_REGION}.amazonaws.com/${env.PROJECT}/${env.component}:${env.APP_VERSION}
                     
-
+ 
                     """
                 }
             }
