@@ -125,7 +125,7 @@ stage('Install Dependencies') {
     {
 
         when{
-            expression {! params.SKIP_QUALITY_GATE }
+            expression {!params.SKIP_QUALITY_GATE }
         }
         steps{
             timeout(time: 30, unit: 'MINUTES') {
