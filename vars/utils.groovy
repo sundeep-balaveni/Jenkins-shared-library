@@ -56,7 +56,7 @@ def readAppVersion() {
 // Auto-assigns to the active sprint. Returns the created issue key (e.g. ROBO-42).
 def createJiraTicket(String project, String component, String appVersion, String shortCommit) {
     def sprintId = ''
-   /*  withCredentials([
+     withCredentials([
         string(credentialsId: 'jira-url', variable: 'JIRA_URL'),
         usernamePassword(credentialsId: 'jira-creds', usernameVariable: 'JIRA_EMAIL', passwordVariable: 'JIRA_TOKEN')
     ]) {
@@ -70,7 +70,7 @@ def createJiraTicket(String project, String component, String appVersion, String
                 | jq -r '.values[0].id'
             ''', returnStdout: true).trim()
         }
-    } */
+    } 
 
     def issue = [
         fields: [

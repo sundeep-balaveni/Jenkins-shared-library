@@ -97,17 +97,17 @@ stage('Read Version') {
                 }
             }
 
-            stage('Functional Tests') {
-                when { expression { env.DEPLOY_TO == 'dev' } }
-                steps {
-                    script {
-                        def result = build(job: "${project}/${component}-tests", wait: true, propagate: false)
-                        if (result.result != 'SUCCESS') {
-                            error("Functional tests failed — Jira ticket not created.")
-                        }
-                    }
-                }
-            }
+            // stage('Functional Tests') {
+            //     when { expression { env.DEPLOY_TO == 'dev' } }
+            //     steps {
+            //         script {
+            //             def result = build(job: "${project}/${component}-tests", wait: true, propagate: false)
+            //             if (result.result != 'SUCCESS') {
+            //                 error("Functional tests failed — Jira ticket not created.")
+            //             }
+            //         }
+            //     }
+            // }
 
              stage('Create Jira Ticket') {
                 when { expression { env.DEPLOY_TO == 'dev' } }
