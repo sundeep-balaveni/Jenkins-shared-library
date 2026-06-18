@@ -47,55 +47,55 @@ def call(Map configMap) {
             }
 
             // ── DEV ────────────────────────────────────────────────────────────
-stage('Read Version') {
-    when { expression { env.DEPLOY_TO == 'dev' } }
-    steps {
-        script {
-            dir(env.SERVICE_PATH) {
-                appVersion = utils.readAppVersion()
-            }
+// stage('Read Version') {
+//     when { expression { env.DEPLOY_TO == 'dev' } }
+//     steps {
+//         script {
+//             dir(env.SERVICE_PATH) {
+//                 appVersion = utils.readAppVersion()
+//             }
 
-            shortCommit = sh(
-                script: 'git rev-parse --short HEAD',
-                returnStdout: true
-            ).trim()
-        }
-    }
-}
+//             shortCommit = sh(
+//                 script: 'git rev-parse --short HEAD',
+//                 returnStdout: true
+//             ).trim()
+//         }
+//     }
+// }
 
-            stage('Promote Image') {
-                when { expression { env.DEPLOY_TO == 'dev' } }
-                steps {
-                    script {
-                        withAWS(credentials: 'aws-creds', region: "${region}") {
-                            sh """
-                                aws ecr get-login-password --region ${region} \
-                                    | docker login --username AWS --password-stdin ${acc_id}.dkr.ecr.${region}.amazonaws.com
-                                docker pull ${acc_id}.dkr.ecr.${region}.amazonaws.com/${project}/${component}:${appVersion}
-                                docker tag  ${acc_id}.dkr.ecr.${region}.amazonaws.com/${project}/${component}:${appVersion} \
-                                            ${acc_id}.dkr.ecr.${region}.amazonaws.com/${project}/${component}:${shortCommit}
-                                docker push ${acc_id}.dkr.ecr.${region}.amazonaws.com/${project}/${component}:${shortCommit}
-                            """
-                        }
-                    }
-                }
-            }
+//             stage('Promote Image') {
+//                 when { expression { env.DEPLOY_TO == 'dev' } }
+//                 steps {
+//                     script {
+//                         withAWS(credentials: 'aws-creds', region: "${region}") {
+//                             sh """
+//                                 aws ecr get-login-password --region ${region} \
+//                                     | docker login --username AWS --password-stdin ${acc_id}.dkr.ecr.${region}.amazonaws.com
+//                                 docker pull ${acc_id}.dkr.ecr.${region}.amazonaws.com/${project}/${component}:${appVersion}
+//                                 docker tag  ${acc_id}.dkr.ecr.${region}.amazonaws.com/${project}/${component}:${appVersion} \
+//                                             ${acc_id}.dkr.ecr.${region}.amazonaws.com/${project}/${component}:${shortCommit}
+//                                 docker push ${acc_id}.dkr.ecr.${region}.amazonaws.com/${project}/${component}:${shortCommit}
+//                             """
+//                         }
+//                     }
+//                 }
+//             }
 
-            stage('Deploy to DEV') {
-                when { expression { env.DEPLOY_TO == 'dev' } }
-                steps {
-                    script {
-                        withAWS(region: "${region}", credentials: 'aws-creds') {
-                            sh """
-                                aws eks update-kubeconfig --region ${region} --name ${CLUSTER}
-                                cd helm
-                                sed -i "s/IMAGE_VERSION/${shortCommit}/g" values.yaml
-                                helm upgrade --install ${component} -f values-dev.yaml -n ${project}-dev --atomic --wait --timeout=5m .
-                            """
-                        }
-                    }
-                }
-            }
+            // stage('Deploy to DEV') {
+            //     when { expression { env.DEPLOY_TO == 'dev' } }
+            //     steps {
+            //         script {
+            //             withAWS(region: "${region}", credentials: 'aws-creds') {
+            //                 sh """
+            //                     aws eks update-kubeconfig --region ${region} --name ${CLUSTER}
+            //                     cd helm
+            //                     sed -i "s/IMAGE_VERSION/${shortCommit}/g" values.yaml
+            //                     helm upgrade --install ${component} -f values-dev.yaml -n ${project}-dev --atomic --wait --timeout=5m .
+            //                 """
+            //             }
+            //         }
+            //     }
+            // }
 
             // stage('Functional Tests') {
             //     when { expression { env.DEPLOY_TO == 'dev' } }
