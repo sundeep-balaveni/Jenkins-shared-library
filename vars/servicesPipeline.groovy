@@ -59,31 +59,23 @@ stage('Read Version') {
     }
 }
 
-    stage('Install Dependencies') {
+stage('Install Dependencies') {
     steps {
-        sh '''
+        dir("${env.SERVICE_PATH}/${env.component}") {
+            sh '''
+            pwd
+            npm install
 
-       dir("${env.SERVICE_PATH}/${env.component}") {
-    sh '''
-    pwd
-    npm install
-    '''
-}
+            echo "===== JEST ====="
+            npm list jest
 
-echo "===== JEST ====="
-npm list jest
+            echo "===== BIN ====="
+            ls -la node_modules/.bin | grep jest
 
-echo "===== BIN ====="
-ls -la node_modules/.bin | grep jest
-
-echo "===== NODE_ENV ====="
-echo $NODE_ENV
-
-
-
-
-
-        '''
+            echo "===== NODE_ENV ====="
+            echo $NODE_ENV
+            '''
+        }
     }
 }
 
