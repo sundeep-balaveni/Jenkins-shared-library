@@ -109,14 +109,42 @@ def call(Map configMap) {
             //     }
             // }
 
-             stage('Create Jira Ticket') {
-                when { expression { env.DEPLOY_TO == 'dev' } }
-                steps {
-                    script {
-                        utils.createJiraTicket(jira_project, component, appVersion, shortCommit)
-                    }
-                }
-            } 
+            //  stage('Create Jira Ticket') {
+            //     when { expression { env.DEPLOY_TO == 'dev' } }
+            //     steps {
+            //         script {
+            //             utils.createJiraTicket(jira_project, component, appVersion, shortCommit)
+            //         }
+            //     }
+            // } 
+
+
+
+            //----------------------new one --------------------------------//
+
+            stage('Create Jira Ticket') {
+    steps {
+        script {
+
+            def jiraIssue = utils.createJiraTicket(
+                jira_project,
+                component,
+                env.appVersion,
+                env.shortCommit
+            )
+
+            env.JIRA_ISSUE = jiraIssue
+
+            echo "Created Jira Ticket: ${jiraIssue}"
+        }
+    }
+}
+
+
+
+
+
+            // ------------------------end-----------------------------------------
 
             // ── UAT ────────────────────────────────────────────────────────────
             stage('Deploy to UAT') {
