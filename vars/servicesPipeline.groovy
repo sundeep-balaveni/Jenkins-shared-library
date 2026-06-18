@@ -46,7 +46,7 @@ def call(Map configMap)
     stage('Read Version') {
     steps {
         script {
-            def packageJson = readJSON file: "APP/FRONTEND/V2/lms-platform/${env.component}/package.json"
+            def packageJson = readJSON file: "${env.SERVICE_PATH}/${env.component}"
 
             echo "PACKAGE_JSON=${packageJson}"
             echo "VERSION=${packageJson.version}"
@@ -62,7 +62,8 @@ def call(Map configMap)
     steps {
         sh '''
 
-        cd APP/FRONTEND/V2/lms-platform/services/auth-service
+        cd "${env.SERVICE_PATH}/${env.component}"
+        echo pwd
         npm install
 
 echo "===== JEST ====="
@@ -85,7 +86,7 @@ echo $NODE_ENV
 stage('Unit Tests') {
     steps {
         sh '''
-        cd APP/FRONTEND/V2/lms-platform/services/auth-service
+        cd "${env.SERVICE_PATH}/${env.component}"
 
         export NODE_ENV=test
 
@@ -104,7 +105,7 @@ stage('Unit Tests') {
 
             withSonarQubeEnv('sonar-server') {   //location for sonar-properties file  //server
                 sh """
-               cd APP/FRONTEND/V2/lms-platform/${env.component}     
+               cd "${env.SERVICE_PATH}/${env.component}"     
                 ${scannerHome}/bin/sonar-scanner
                 
                 """
@@ -171,11 +172,11 @@ stage('Unit Tests') {
                     withAWS(credentials: 'ecr-creds', region: 'us-east-1') {
 
                     sh """
-                    cd APP/FRONTEND/V2/lms-platform/${env.component}   
+                   cd "${env.SERVICE_PATH}/${env.component}" 
 
                    
                    
-                    docker build -t ${ACC_ID}.dkr.ecr.${ACC_REGION}.amazonaws.com/${env.PROJECT}/${env.component}:${env.VERSION} . 
+                    docker build -t ${ACC_ID}.dkr.ecr.${ACC_REGION}.amazonaws.com/${env.PROJECT}/${env.component}:${env.APP_VERSION} .
                     
 
                     """
