@@ -109,14 +109,14 @@ stage('Read Version') {
                 }
             }
 
-            /* stage('Create Jira Ticket') {
+             stage('Create Jira Ticket') {
                 when { expression { env.DEPLOY_TO == 'dev' } }
                 steps {
                     script {
                         utils.createJiraTicket(jira_project, component, appVersion, shortCommit)
                     }
                 }
-            } */
+            } 
 
             // ── UAT ────────────────────────────────────────────────────────────
             stage('Deploy to UAT') {
