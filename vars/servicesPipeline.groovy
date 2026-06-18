@@ -27,7 +27,7 @@ def call(Map configMap)
     {
 
         booleanParam(name: 'DEPLOY', defaultValue: false, description: 'Deploy to selected environment')
-        booleanParam(name: 'SKIP_QUALITY_GATE', defaultValue: false, description: 'Skip Quality Gate')
+        booleanParam(name: 'SKIP_QUALITY_GATE', defaultValue: true, description: 'Skip Quality Gate')
 
     }
 
