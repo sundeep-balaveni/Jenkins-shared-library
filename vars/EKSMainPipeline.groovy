@@ -2,7 +2,6 @@ def call(Map configMap) {
 pipeline {
 agent { node { label 'RYE-TEST' } }
 
-```
     parameters {
         choice(
             name: 'deploy_to',
@@ -320,6 +319,5 @@ agent { node { label 'RYE-TEST' } }
         }
     }
 }
-```
 
 }
