@@ -42,7 +42,12 @@ def updateCommitStatus(String state, String description, String context = 'Jenki
 //   requirements.txt → Python (reads version.txt)
 def readAppVersion() {
     if (fileExists('package.json')) {
-        return readJSON(file: 'package.json').version
+        def pkg = readJSON(file: 'package.json')
+
+        echo "PACKAGE JSON = ${pkg}"
+        echo "VERSION = ${pkg.version}"
+
+        return pkg.version
     } else if (fileExists('pom.xml')) {
         return readMavenPom(file: 'pom.xml').version
     } else if (fileExists('requirements.txt')) {
