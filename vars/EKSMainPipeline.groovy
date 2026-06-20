@@ -34,181 +34,199 @@ def call(Map configMap) {
         }
 
         stages {
-            stage('Init') {
-                steps {
-                    script {
-                        env.DEPLOY_TO      = env.deploy_to  ?: params.deploy_to  ?: 'dev'
-                        env.TARGET_VERSION = env.VERSION    ?: params.VERSION    ?: ''
-                        env.JIRA_ISSUE     = env.JIRA_KEY   ?: params.JIRA_KEY   ?: ''
-                        env.CR_NUMBER      = env.CR_NUMBER  ?: params.CR_NUMBER  ?: ''
-                        echo "DEPLOY_TO=${env.DEPLOY_TO}  TARGET_VERSION=${env.TARGET_VERSION}  JIRA_ISSUE=${env.JIRA_ISSUE}  CR_NUMBER=${env.CR_NUMBER}"
-                    }
-                }
-            }
 
             // ── DEV ────────────────────────────────────────────────────────────
-// stage('Read Version') {
-//     when { expression { env.DEPLOY_TO == 'dev' } }
-//     steps {
-//         script {
-//             dir(env.SERVICE_PATH) {
-//                 appVersion = utils.readAppVersion()
-//             }
 
-//             shortCommit = sh(
-//                 script: 'git rev-parse --short HEAD',
-//                 returnStdout: true
-//             ).trim()
-//         }
-//     }
-// }
+stage('Read Version') {
+    when { expression { env.DEPLOY_TO == 'dev' } }
+    steps {
+        script {
+            dir(env.SERVICE_PATH) {
+                env.appVersion = utils.readAppVersion()
+            }
 
-//             stage('Promote Image') {
-//                 when { expression { env.DEPLOY_TO == 'dev' } }
-//                 steps {
-//                     script {
-//                         withAWS(credentials: 'aws-creds', region: "${region}") {
-//                             sh """
-//                                 aws ecr get-login-password --region ${region} \
-//                                     | docker login --username AWS --password-stdin ${acc_id}.dkr.ecr.${region}.amazonaws.com
-//                                 docker pull ${acc_id}.dkr.ecr.${region}.amazonaws.com/${project}/${component}:${appVersion}
-//                                 docker tag  ${acc_id}.dkr.ecr.${region}.amazonaws.com/${project}/${component}:${appVersion} \
-//                                             ${acc_id}.dkr.ecr.${region}.amazonaws.com/${project}/${component}:${shortCommit}
-//                                 docker push ${acc_id}.dkr.ecr.${region}.amazonaws.com/${project}/${component}:${shortCommit}
-//                             """
-//                         }
-//                     }
-//                 }
-//             }
+            env.shortCommit = sh(
+                script: 'git rev-parse --short HEAD',
+                returnStdout: true
+            ).trim()
 
-            // stage('Deploy to DEV') {
-            //     when { expression { env.DEPLOY_TO == 'dev' } }
-            //     steps {
-            //         script {
-            //             withAWS(region: "${region}", credentials: 'aws-creds') {
-            //                 sh """
-            //                     aws eks update-kubeconfig --region ${region} --name ${CLUSTER}
-            //                     cd helm
-            //                     sed -i "s/IMAGE_VERSION/${shortCommit}/g" values.yaml
-            //                     helm upgrade --install ${component} -f values-dev.yaml -n ${project}-dev --atomic --wait --timeout=5m .
-            //                 """
-            //             }
-            //         }
-            //     }
-            // }
+            echo "App Version: ${env.appVersion}"
+            echo "Short Commit: ${env.shortCommit}"
+        }
+    }
+}
 
-            // stage('Functional Tests') {
-            //     when { expression { env.DEPLOY_TO == 'dev' } }
-            //     steps {
-            //         script {
-            //             def result = build(job: "${project}/${component}-tests", wait: true, propagate: false)
-            //             if (result.result != 'SUCCESS') {
-            //                 error("Functional tests failed — Jira ticket not created.")
-            //             }
-            //         }
-            //     }
-            // }
+stage('Promote Image') {
+    when { expression { env.DEPLOY_TO == 'dev' } }
+    steps {
+        script {
+            withAWS(credentials: 'aws-creds', region: "${region}") {
+                sh """
+                    aws ecr get-login-password --region ${region} \
+                    | docker login --username AWS --password-stdin ${acc_id}.dkr.ecr.${region}.amazonaws.com
 
-            //  stage('Create Jira Ticket') {
-            //     when { expression { env.DEPLOY_TO == 'dev' } }
-            //     steps {
-            //         script {
-            //             utils.createJiraTicket(jira_project, component, appVersion, shortCommit)
-            //         }
-            //     }
-            // } 
+                    docker pull ${acc_id}.dkr.ecr.${region}.amazonaws.com/${project}/${component}:${appVersion}
 
+                    docker tag \
+                    ${acc_id}.dkr.ecr.${region}.amazonaws.com/${project}/${component}:${appVersion} \
+                    ${acc_id}.dkr.ecr.${region}.amazonaws.com/${project}/${component}:${shortCommit}
 
+                    docker push \
+                    ${acc_id}.dkr.ecr.${region}.amazonaws.com/${project}/${component}:${shortCommit}
+                """
+            }
+        }
+    }
+}
 
-            //----------------------new one --------------------------------//
-
-            stage('Create Jira Ticket') {
+stage('Create Jira Ticket') {
+    when { expression { env.DEPLOY_TO == 'dev' } }
     steps {
         script {
 
-            def jiraIssue = utils.createJiraTicket(
+            env.JIRA_ISSUE = utils.createJiraTicket(
                 jira_project,
                 component,
                 env.appVersion,
                 env.shortCommit
             )
 
-            env.JIRA_ISSUE = jiraIssue
-
-            echo "Created Jira Ticket: ${jiraIssue}"
+            echo "Created Jira Ticket: ${env.JIRA_ISSUE}"
         }
     }
 }
 
+stage('Deploy to DEV') {
+    when { expression { env.DEPLOY_TO == 'dev' } }
+    steps {
+        script {
+            withAWS(region: "${region}", credentials: 'aws-creds') {
+                sh """
+                    aws eks update-kubeconfig \
+                        --region ${region} \
+                        --name ${CLUSTER}
 
+                    cd helm
 
+                    sed -i "s/IMAGE_VERSION/${shortCommit}/g" values.yaml
 
-
-            // ------------------------end-----------------------------------------
-
-            // ── UAT ────────────────────────────────────────────────────────────
-            stage('Deploy to UAT') {
-                when { expression { env.DEPLOY_TO == 'uat' } }
-                steps {
-                    script {
-                        sh "git checkout ${env.TARGET_VERSION}"
-                        withAWS(region: "${region}", credentials: 'aws-creds') {
-                            sh """
-                                aws eks update-kubeconfig --region ${region} --name ${CLUSTER}
-                                cd helm
-                                sed -i "s/IMAGE_VERSION/${env.TARGET_VERSION}/g" values.yaml
-                                helm upgrade --install ${component} -f values-uat.yaml -n ${project}-uat --atomic --wait --timeout=5m .
-                            """
-                        }
-                    }
-                }
-            }
-
-            // ── PROD ───────────────────────────────────────────────────────────
-            stage('Validate Change Request') {
-                when { expression { env.DEPLOY_TO == 'prod' } }
-                steps {
-                    script {
-                        utils.validateChangeRequest(env.CR_NUMBER)
-                    }
-                }
-            }
-
-            stage('Deploy to PROD') {
-                when { expression { env.DEPLOY_TO == 'prod' } }
-                steps {
-                    script {
-                        sh "git checkout ${env.TARGET_VERSION}"
-                        withAWS(region: "${region}", credentials: 'aws-creds') {
-                            sh """
-                                aws eks update-kubeconfig --region ${region} --name ${CLUSTER}
-                                cd helm
-                                sed -i "s/IMAGE_VERSION/${env.TARGET_VERSION}/g" values.yaml
-                                helm upgrade --install ${component} -f values-prod.yaml -n ${project}-prod --atomic --wait --timeout=5m .
-                            """
-                        }
-                        utils.transitionJiraTicket(env.JIRA_ISSUE, 'Done')
-                        withCredentials([string(credentialsId: 'github-token', variable: 'GITHUB_TOKEN')]) {
-                            sh '''
-                                APP_VERSION=$(cat package.json | jq -r '.version')
-                                REPO_PATH=$(git remote get-url origin | sed 's/.*github\\.com[\\/:]//;s/\\.git$//')
-                                git remote set-url origin https://$GITHUB_TOKEN@github.com/$REPO_PATH
-                                git tag $APP_VERSION
-                                git push origin $APP_VERSION
-                            '''
-                        }
-                    }
-                }
-            }
-        }
-
-        post {
-            success {
-                echo "${env.DEPLOY_TO} deploy succeeded for ${component}"
-            }
-            failure {
-                echo "${env.DEPLOY_TO} deploy failed for ${component}"
+                    helm upgrade --install ${component} \
+                        -f values-dev.yaml \
+                        -n ${project}-dev \
+                        --atomic \
+                        --wait \
+                        --timeout=5m .
+                """
             }
         }
     }
 }
+
+stage('Functional Tests') {
+    when { expression { env.DEPLOY_TO == 'dev' } }
+    steps {
+        script {
+            def result = build(
+                job: "${project}/${component}-tests",
+                wait: true,
+                propagate: false
+            )
+
+            if (result.result != 'SUCCESS') {
+                error("Functional tests failed.")
+            }
+        }
+    }
+}
+
+// ── UAT ────────────────────────────────────────────────────────────
+
+stage('Deploy to UAT') {
+    when { expression { env.DEPLOY_TO == 'uat' } }
+    steps {
+        script {
+            sh "git checkout ${env.TARGET_VERSION}"
+
+            withAWS(region: "${region}", credentials: 'aws-creds') {
+                sh """
+                    aws eks update-kubeconfig --region ${region} --name ${CLUSTER}
+
+                    cd helm
+
+                    sed -i "s/IMAGE_VERSION/${env.TARGET_VERSION}/g" values.yaml
+
+                    helm upgrade --install ${component} \
+                        -f values-uat.yaml \
+                        -n ${project}-uat \
+                        --atomic \
+                        --wait \
+                        --timeout=5m .
+                """
+            }
+        }
+    }
+}
+
+// ── PROD ───────────────────────────────────────────────────────────
+
+stage('Validate Change Request') {
+    when { expression { env.DEPLOY_TO == 'prod' } }
+    steps {
+        script {
+            utils.validateChangeRequest(env.CR_NUMBER)
+        }
+    }
+}
+
+stage('Deploy to PROD') {
+    when { expression { env.DEPLOY_TO == 'prod' } }
+    steps {
+        script {
+
+            sh "git checkout ${env.TARGET_VERSION}"
+
+            withAWS(region: "${region}", credentials: 'aws-creds') {
+                sh """
+                    aws eks update-kubeconfig --region ${region} --name ${CLUSTER}
+
+                    cd helm
+
+                    sed -i "s/IMAGE_VERSION/${env.TARGET_VERSION}/g" values.yaml
+
+                    helm upgrade --install ${component} \
+                        -f values-prod.yaml \
+                        -n ${project}-prod \
+                        --atomic \
+                        --wait \
+                        --timeout=5m .
+                """
+            }
+
+            utils.transitionJiraTicket(
+                env.JIRA_ISSUE,
+                'Done'
+            )
+
+            withCredentials([
+                string(
+                    credentialsId: 'github-token',
+                    variable: 'GITHUB_TOKEN'
+                )
+            ]) {
+                sh '''
+                    APP_VERSION=$(cat package.json | jq -r '.version')
+
+                    REPO_PATH=$(git remote get-url origin | sed 's/.*github\\.com[\\/:]//;s/\\.git$//')
+
+                    git remote set-url origin https://$GITHUB_TOKEN@github.com/$REPO_PATH
+
+                    git tag $APP_VERSION
+
+                    git push origin $APP_VERSION
+                '''
+            }
+        }
+    }
+}
+            
+               }
