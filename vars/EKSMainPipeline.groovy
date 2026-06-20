@@ -1,9 +1,9 @@
-def call
+def call(Map configMap) {
+
     def APP_VERSION = ""
     def SHORT_COMMIT = ""
 
-(Map configMap) {
-pipeline {
+    pipeline {
 agent { node { label 'RYE-TEST' } }
 
     parameters {
@@ -84,62 +84,60 @@ environment {
         // → Deploy DEV → Functional Tests
         // ─────────────────────────────────────────────
 
-stage('Read Version') {
-    when { expression { env.DEPLOY_TO == 'dev' } }
+// stage('Read Version') {
+//     when { expression { env.DEPLOY_TO == 'dev' } }
 
-    steps {
-        script {
+//     steps {
+//         script {
 
-            APP_VERSION = ""
+//             dir("${env.SERVICE_PATH}/${component}") {
+//                 APP_VERSION = utils.readAppVersion()
+//             }
 
-            dir("${env.SERVICE_PATH}/${component}") {
-                APP_VERSION = utils.readAppVersion()
-            }
+//             SHORT_COMMIT = sh(
+//                 script: 'git rev-parse --short HEAD',
+//                 returnStdout: true
+//             ).trim()
 
-            SHORT_COMMIT = sh(
-                script: 'git rev-parse --short HEAD',
-                returnStdout: true
-            ).trim()
+//             echo "APP_VERSION=${APP_VERSION}"
+//             echo "SHORT_COMMIT=${SHORT_COMMIT}"
+//         }
+//     }
+// }
+//         stage('Promote Image') {
 
-            echo "APP_VERSION=${APP_VERSION}"
-            echo "SHORT_COMMIT=${SHORT_COMMIT}"
-        }
-    }
-}
-        stage('Promote Image') {
+//     when { expression { env.DEPLOY_TO == 'dev' } }
 
-    when { expression { env.DEPLOY_TO == 'dev' } }
+//     steps {
+//         script {
 
-    steps {
-        script {
+//             echo "PROMOTE VERSION=${APP_VERSION}"
+//             echo "PROMOTE COMMIT=${SHORT_COMMIT}"
 
-            echo "PROMOTE VERSION=${APP_VERSION}"
-            echo "PROMOTE COMMIT=${SHORT_COMMIT}"
+//             withAWS(
+//                 credentials: 'ecr-creds',
+//                 region: "${region}"
+//             ) {
 
-            withAWS(
-                credentials: 'ecr-creds',
-                region: "${region}"
-            ) {
+//                 sh """
+//                     aws ecr get-login-password --region ${region} \
+//                     | docker login --username AWS --password-stdin \
+//                     ${acc_id}.dkr.ecr.${region}.amazonaws.com
 
-                sh """
-                    aws ecr get-login-password --region ${region} \
-                    | docker login --username AWS --password-stdin \
-                    ${acc_id}.dkr.ecr.${region}.amazonaws.com
+//                     docker pull \
+//                     ${acc_id}.dkr.ecr.${region}.amazonaws.com/${project}/${component}:${APP_VERSION}
 
-                    docker pull \
-                    ${acc_id}.dkr.ecr.${region}.amazonaws.com/${project}/${component}:${APP_VERSION}
+//                     docker tag \
+//                     ${acc_id}.dkr.ecr.${region}.amazonaws.com/${project}/${component}:${APP_VERSION} \
+//                     ${acc_id}.dkr.ecr.${region}.amazonaws.com/${project}/${component}:${SHORT_COMMIT}
 
-                    docker tag \
-                    ${acc_id}.dkr.ecr.${region}.amazonaws.com/${project}/${component}:${APP_VERSION} \
-                    ${acc_id}.dkr.ecr.${region}.amazonaws.com/${project}/${component}:${SHORT_COMMIT}
-
-                    docker push \
-                    ${acc_id}.dkr.ecr.${region}.amazonaws.com/${project}/${component}:${SHORT_COMMIT}
-                """
-            }
-        }
-    }
-}
+//                     docker push \
+//                     ${acc_id}.dkr.ecr.${region}.amazonaws.com/${project}/${component}:${SHORT_COMMIT}
+//                 """
+//             }
+//         }
+//     }
+// }
         stage('Create Jira Ticket') {
             when { expression { env.DEPLOY_TO == 'dev' } }
 
@@ -149,8 +147,8 @@ stage('Read Version') {
 env.JIRA_ISSUE = utils.createJiraTicket(
     jira_project,
     component,
-    env.APP_VERSION,
-    env.SHORT_COMMIT
+    APP_VERSION,
+    SHORT_COMMIT
 )
 
                     echo "Created Jira Ticket : ${env.JIRA_ISSUE}"
@@ -174,7 +172,7 @@ env.JIRA_ISSUE = utils.createJiraTicket(
 
                             cd helm
 
-                            sed -i "s/IMAGE_VERSION/${shortCommit}/g" values.yaml
+                            sed -i "s/IMAGE_VERSION/${SHORT_COMMIT}/g" values.yaml
 
                             helm upgrade --install ${component} \
                                 -f values-dev.yaml \
