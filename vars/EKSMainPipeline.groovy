@@ -107,7 +107,7 @@ agent { node { label 'RYE-TEST' } }
             steps {
                 script {
                     withAWS(
-                        credentials: 'aws-creds',
+                        credentials: 'ecr-creds',
                         region: "${region}"
                     ) {
                         sh """
