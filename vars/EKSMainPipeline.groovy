@@ -1,4 +1,8 @@
-def call(Map configMap) {
+def call
+    def APP_VERSION = ""
+    def SHORT_COMMIT = ""
+
+(Map configMap) {
 pipeline {
 agent { node { label 'RYE-TEST' } }
 
@@ -44,8 +48,7 @@ agent { node { label 'RYE-TEST' } }
     }
 
 environment {
-    APP_VERSION  = ""
-    SHORT_COMMIT = ""
+
     acc_id       = "160885265516"
     project      = configMap.get("project")
     component    = configMap.get("component")
@@ -86,55 +89,57 @@ stage('Read Version') {
 
     steps {
         script {
+
+            APP_VERSION = ""
+
             dir("${env.SERVICE_PATH}/${component}") {
-                env.APP_VERSION = utils.readAppVersion()
+                APP_VERSION = utils.readAppVersion()
             }
 
-            env.SHORT_COMMIT = sh(
+            SHORT_COMMIT = sh(
                 script: 'git rev-parse --short HEAD',
                 returnStdout: true
             ).trim()
 
-            echo "APP_VERSION=${env.APP_VERSION}"
-            echo "SHORT_COMMIT=${env.SHORT_COMMIT}"
+            echo "APP_VERSION=${APP_VERSION}"
+            echo "SHORT_COMMIT=${SHORT_COMMIT}"
         }
     }
 }
         stage('Promote Image') {
 
+    when { expression { env.DEPLOY_TO == 'dev' } }
 
-            when { expression { env.DEPLOY_TO == 'dev' } }
+    steps {
+        script {
 
-            steps {
-                script {
+            echo "PROMOTE VERSION=${APP_VERSION}"
+            echo "PROMOTE COMMIT=${SHORT_COMMIT}"
 
-                    
-echo "PROMOTE VERSION=${env.APP_VERSION}"
-echo "PROMOTE COMMIT=${env.SHORT_COMMIT}"
+            withAWS(
+                credentials: 'ecr-creds',
+                region: "${region}"
+            ) {
 
+                sh """
+                    aws ecr get-login-password --region ${region} \
+                    | docker login --username AWS --password-stdin \
+                    ${acc_id}.dkr.ecr.${region}.amazonaws.com
 
-                    withAWS(
-                        credentials: 'ecr-creds',
-                        region: "${region}"
-                    ) {
-                        sh """
-                            aws ecr get-login-password --region ${region} \
-                            | docker login --username AWS --password-stdin \
-                            ${acc_id}.dkr.ecr.${region}.amazonaws.com
+                    docker pull \
+                    ${acc_id}.dkr.ecr.${region}.amazonaws.com/${project}/${component}:${APP_VERSION}
 
-docker pull ${acc_id}.dkr.ecr.${region}.amazonaws.com/${project}/${component}:${env.APP_VERSION}
+                    docker tag \
+                    ${acc_id}.dkr.ecr.${region}.amazonaws.com/${project}/${component}:${APP_VERSION} \
+                    ${acc_id}.dkr.ecr.${region}.amazonaws.com/${project}/${component}:${SHORT_COMMIT}
 
-docker tag ${acc_id}.dkr.ecr.${region}.amazonaws.com/${project}/${component}:${env.APP_VERSION} \
-           ${acc_id}.dkr.ecr.${region}.amazonaws.com/${project}/${component}:${env.SHORT_COMMIT}
-
-                            docker push \
-                            ${acc_id}.dkr.ecr.${region}.amazonaws.com/${project}/${component}:${env.SHORT_COMMIT}
-                        """
-                    }
-                }
+                    docker push \
+                    ${acc_id}.dkr.ecr.${region}.amazonaws.com/${project}/${component}:${SHORT_COMMIT}
+                """
             }
         }
-
+    }
+}
         stage('Create Jira Ticket') {
             when { expression { env.DEPLOY_TO == 'dev' } }
 
