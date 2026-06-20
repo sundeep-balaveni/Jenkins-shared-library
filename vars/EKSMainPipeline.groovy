@@ -109,12 +109,14 @@ stage('Read Version') {
         stage('Promote Image') {
 
 
-            echo "PROMOTE VERSION=${env.appVersion}"
-echo "PROMOTE COMMIT=${env.shortCommit}"
             when { expression { env.DEPLOY_TO == 'dev' } }
 
             steps {
                 script {
+
+                    
+            echo "PROMOTE VERSION=${env.appVersion}"
+echo "PROMOTE COMMIT=${env.shortCommit}"
                     withAWS(
                         credentials: 'ecr-creds',
                         region: "${region}"
