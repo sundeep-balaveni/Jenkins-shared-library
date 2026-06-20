@@ -43,17 +43,17 @@ agent { node { label 'RYE-TEST' } }
         )
     }
 
-    environment {
-        appVersion   = ""
-        shortCommit  = ""
-        acc_id       = "160885265516"
-        project      = configMap.get("project")
-        component    = configMap.get("component")
-        jira_project = configMap.get("jiraProject")
-        region       = "us-east-1"
-        CLUSTER      = "roboshop-dev"
-        SERVICE_PATH = configMap.get("servicePath")
-    }
+environment {
+    APP_VERSION  = ""
+    SHORT_COMMIT = ""
+    acc_id       = "160885265516"
+    project      = configMap.get("project")
+    component    = configMap.get("component")
+    jira_project = configMap.get("jiraProject")
+    region       = "us-east-1"
+    CLUSTER      = "roboshop-dev"
+    SERVICE_PATH = configMap.get("servicePath")
+}
 
     stages {
 
@@ -86,18 +86,17 @@ stage('Read Version') {
 
     steps {
         script {
-
             dir("${env.SERVICE_PATH}/${component}") {
-                env.appVersion = utils.readAppVersion()
+                env.APP_VERSION = utils.readAppVersion()
             }
 
-            env.shortCommit = sh(
+            env.SHORT_COMMIT = sh(
                 script: 'git rev-parse --short HEAD',
                 returnStdout: true
             ).trim()
 
-            echo "AFTER ASSIGNMENT VERSION=${env.appVersion}"
-            echo "AFTER ASSIGNMENT COMMIT=${env.shortCommit}"
+            echo "APP_VERSION=${env.APP_VERSION}"
+            echo "SHORT_COMMIT=${env.SHORT_COMMIT}"
         }
     }
 }
@@ -110,12 +109,10 @@ stage('Read Version') {
                 script {
 
                     
-echo "PROMOTE VERSION=${env.appVersion}"
-echo "PROMOTE COMMIT=${env.shortCommit}"
+echo "PROMOTE VERSION=${env.APP_VERSION}"
+echo "PROMOTE COMMIT=${env.SHORT_COMMIT}"
 
-sh '''
-    env | grep -E "appVersion|shortCommit"
-'''
+
                     withAWS(
                         credentials: 'ecr-creds',
                         region: "${region}"
@@ -125,13 +122,13 @@ sh '''
                             | docker login --username AWS --password-stdin \
                             ${acc_id}.dkr.ecr.${region}.amazonaws.com
 
-docker pull ${acc_id}.dkr.ecr.${region}.amazonaws.com/${project}/${component}:${env.appVersion}
+docker pull ${acc_id}.dkr.ecr.${region}.amazonaws.com/${project}/${component}:${env.APP_VERSION}
 
-docker tag ${acc_id}.dkr.ecr.${region}.amazonaws.com/${project}/${component}:${env.appVersion} \
-           ${acc_id}.dkr.ecr.${region}.amazonaws.com/${project}/${component}:${env.shortCommit}
+docker tag ${acc_id}.dkr.ecr.${region}.amazonaws.com/${project}/${component}:${env.APP_VERSION} \
+           ${acc_id}.dkr.ecr.${region}.amazonaws.com/${project}/${component}:${env.SHORT_COMMIT}
 
                             docker push \
-                            ${acc_id}.dkr.ecr.${region}.amazonaws.com/${project}/${component}:${env.shortCommit}
+                            ${acc_id}.dkr.ecr.${region}.amazonaws.com/${project}/${component}:${env.SHORT_COMMIT}
                         """
                     }
                 }
@@ -144,12 +141,12 @@ docker tag ${acc_id}.dkr.ecr.${region}.amazonaws.com/${project}/${component}:${e
             steps {
                 script {
 
-                    env.JIRA_ISSUE = utils.createJiraTicket(
-                        jira_project,
-                        component,
-                        env.appVersion,
-                        env.shortCommit
-                    )
+env.JIRA_ISSUE = utils.createJiraTicket(
+    jira_project,
+    component,
+    env.APP_VERSION,
+    env.SHORT_COMMIT
+)
 
                     echo "Created Jira Ticket : ${env.JIRA_ISSUE}"
                 }
