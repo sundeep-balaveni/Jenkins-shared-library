@@ -116,14 +116,14 @@ agent { node { label 'RYE-TEST' } }
                             ${acc_id}.dkr.ecr.${region}.amazonaws.com
 
                             docker pull \
-                            ${acc_id}.dkr.ecr.${region}.amazonaws.com/${project}/${component}:${appVersion}
+                            ${acc_id}.dkr.ecr.${region}.amazonaws.com/${project}/${component}:${env.appVersion}
 
                             docker tag \
-                            ${acc_id}.dkr.ecr.${region}.amazonaws.com/${project}/${component}:${appVersion} \
-                            ${acc_id}.dkr.ecr.${region}.amazonaws.com/${project}/${component}:${shortCommit}
+                            ${acc_id}.dkr.ecr.${region}.amazonaws.com/${project}/${component}:${env.appVersion} \
+                            ${acc_id}.dkr.ecr.${region}.amazonaws.com/${project}/${component}:${env.shortCommit}
 
                             docker push \
-                            ${acc_id}.dkr.ecr.${region}.amazonaws.com/${project}/${component}:${shortCommit}
+                            ${acc_id}.dkr.ecr.${region}.amazonaws.com/${project}/${component}:${env.shortCommit}
                         """
                     }
                 }
