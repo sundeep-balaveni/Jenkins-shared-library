@@ -138,23 +138,56 @@ environment {
 //         }
 //     }
 // }
-        stage('Create Jira Ticket') {
-            when { expression { env.DEPLOY_TO == 'dev' } }
+stage('Create Jira Ticket') {
+    steps {
+        script {
 
-            steps {
-                script {
+            withCredentials([
+                string(credentialsId: 'jira-url', variable: 'JIRA_URL'),
+                usernamePassword(
+                    credentialsId: 'jira-creds',
+                    usernameVariable: 'JIRA_EMAIL',
+                    passwordVariable: 'JIRA_TOKEN'
+                )
+            ]) {
 
-env.JIRA_ISSUE = utils.createJiraTicket(
-    jira_project,
-    component,
-    APP_VERSION,
-    SHORT_COMMIT
-)
+                sh """
+cat > issue.json <<EOF
+{
+  "fields": {
+    "project": {
+      "key": "SCRUM"
+    },
+    "summary": "Auth Service Test Ticket",
+    "issuetype": {
+      "name": "Task"
+    },
+    "description": {
+      "type": "doc",
+      "version": 1,
+      "content": [{
+        "type": "paragraph",
+        "content": [{
+          "type": "text",
+          "text": "Created from Jenkins Pipeline"
+        }]
+      }]
+    }
+  }
+}
+EOF
 
-                    echo "Created Jira Ticket : ${env.JIRA_ISSUE}"
-                }
+curl -X POST \
+-u "$JIRA_EMAIL:$JIRA_TOKEN" \
+-H "Accept: application/json" \
+-H "Content-Type: application/json" \
+--data @issue.json \
+"$JIRA_URL/rest/api/3/issue"
+"""
             }
         }
+    }
+}
 
         stage('Deploy to DEV') {
             when { expression { env.DEPLOY_TO == 'dev' } }
