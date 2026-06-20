@@ -86,7 +86,7 @@ agent { node { label 'RYE-TEST' } }
 
             steps {
                 script {
-                    dir(env.SERVICE_PATH) {
+                     dir("${env.SERVICE_PATH}/${component}") {
                         env.appVersion = utils.readAppVersion()
                     }
 
