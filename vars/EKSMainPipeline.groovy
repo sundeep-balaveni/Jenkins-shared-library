@@ -81,14 +81,19 @@ agent { node { label 'RYE-TEST' } }
         // → Deploy DEV → Functional Tests
         // ─────────────────────────────────────────────
 
- stage('Read Version') {
+stage('Read Version') {
     when { expression { env.DEPLOY_TO == 'dev' } }
+
     steps {
         script {
 
+            def version
+
             dir("${env.SERVICE_PATH}/${component}") {
-                env.appVersion = utils.readAppVersion()
+                version = utils.readAppVersion()
             }
+
+            env.appVersion = version
 
             env.shortCommit = sh(
                 script: 'git rev-parse --short HEAD',
@@ -102,6 +107,10 @@ agent { node { label 'RYE-TEST' } }
 }
 
         stage('Promote Image') {
+
+
+            echo "PROMOTE VERSION=${env.appVersion}"
+echo "PROMOTE COMMIT=${env.shortCommit}"
             when { expression { env.DEPLOY_TO == 'dev' } }
 
             steps {
