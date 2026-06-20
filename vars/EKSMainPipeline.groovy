@@ -87,25 +87,20 @@ stage('Read Version') {
     steps {
         script {
 
-            def version
-
             dir("${env.SERVICE_PATH}/${component}") {
-                version = utils.readAppVersion()
+                env.appVersion = utils.readAppVersion()
             }
-
-            env.appVersion = version
 
             env.shortCommit = sh(
                 script: 'git rev-parse --short HEAD',
                 returnStdout: true
             ).trim()
 
-            echo "Version : ${env.appVersion}"
-            echo "Commit  : ${env.shortCommit}"
+            echo "AFTER ASSIGNMENT VERSION=${env.appVersion}"
+            echo "AFTER ASSIGNMENT COMMIT=${env.shortCommit}"
         }
     }
 }
-
         stage('Promote Image') {
 
 
@@ -115,8 +110,12 @@ stage('Read Version') {
                 script {
 
                     
-            echo "PROMOTE VERSION=${env.appVersion}"
+echo "PROMOTE VERSION=${env.appVersion}"
 echo "PROMOTE COMMIT=${env.shortCommit}"
+
+sh '''
+    env | grep -E "appVersion|shortCommit"
+'''
                     withAWS(
                         credentials: 'ecr-creds',
                         region: "${region}"
