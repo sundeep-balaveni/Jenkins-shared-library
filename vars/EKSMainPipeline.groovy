@@ -86,17 +86,17 @@ agent { node { label 'RYE-TEST' } }
 
             steps {
                 script {
-                     dir("${env.SERVICE_PATH}/${component}") {
-                        env.appVersion = utils.readAppVersion()
-                    }
+                    dir("${env.SERVICE_PATH}/${component}") {
+    env.appVersion = utils.readAppVersion()
+}
 
-                    env.shortCommit = sh(
-                        script: 'git rev-parse --short HEAD',
-                        returnStdout: true
-                    ).trim()
+env.shortCommit = sh(
+    script: 'git rev-parse --short HEAD',
+    returnStdout: true
+).trim()
 
-                    echo "Version : ${env.appVersion}"
-                    echo "Commit  : ${env.shortCommit}"
+echo "Version : ${env.appVersion}"
+echo "Commit  : ${env.shortCommit}"
                 }
             }
         }
