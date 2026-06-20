@@ -81,25 +81,25 @@ agent { node { label 'RYE-TEST' } }
         // → Deploy DEV → Functional Tests
         // ─────────────────────────────────────────────
 
-        stage('Read Version') {
-            when { expression { env.DEPLOY_TO == 'dev' } }
+ stage('Read Version') {
+    when { expression { env.DEPLOY_TO == 'dev' } }
+    steps {
+        script {
 
-            steps {
-                script {
-                    dir("${env.SERVICE_PATH}/${component}") {
-    env.appVersion = utils.readAppVersion()
-}
-
-env.shortCommit = sh(
-    script: 'git rev-parse --short HEAD',
-    returnStdout: true
-).trim()
-
-echo "Version : ${env.appVersion}"
-echo "Commit  : ${env.shortCommit}"
-                }
+            dir("${env.SERVICE_PATH}/${component}") {
+                env.appVersion = utils.readAppVersion()
             }
+
+            env.shortCommit = sh(
+                script: 'git rev-parse --short HEAD',
+                returnStdout: true
+            ).trim()
+
+            echo "Version : ${env.appVersion}"
+            echo "Commit  : ${env.shortCommit}"
         }
+    }
+}
 
         stage('Promote Image') {
             when { expression { env.DEPLOY_TO == 'dev' } }
@@ -115,12 +115,10 @@ echo "Commit  : ${env.shortCommit}"
                             | docker login --username AWS --password-stdin \
                             ${acc_id}.dkr.ecr.${region}.amazonaws.com
 
-                            docker pull \
-                            ${acc_id}.dkr.ecr.${region}.amazonaws.com/${project}/${component}:${env.appVersion}
+docker pull ${acc_id}.dkr.ecr.${region}.amazonaws.com/${project}/${component}:${env.appVersion}
 
-                            docker tag \
-                            ${acc_id}.dkr.ecr.${region}.amazonaws.com/${project}/${component}:${env.appVersion} \
-                            ${acc_id}.dkr.ecr.${region}.amazonaws.com/${project}/${component}:${env.shortCommit}
+docker tag ${acc_id}.dkr.ecr.${region}.amazonaws.com/${project}/${component}:${env.appVersion} \
+           ${acc_id}.dkr.ecr.${region}.amazonaws.com/${project}/${component}:${env.shortCommit}
 
                             docker push \
                             ${acc_id}.dkr.ecr.${region}.amazonaws.com/${project}/${component}:${env.shortCommit}
